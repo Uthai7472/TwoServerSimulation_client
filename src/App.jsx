@@ -8,7 +8,7 @@ function App() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            await axios.post('http://localhost:5001/command', { command });
+            await axios.post('https://two-server-simulation-server.vercel.app/command', { command });
             alert('Command sent to server1');
         } catch (error) {
             console.error('Error sending command:', error);
@@ -18,7 +18,7 @@ function App() {
     useEffect(() => {
       const fetchRandomValue = async () => {
           try {
-              const response = await axios.get('http://localhost:5001/random');
+              const response = await axios.get('https://two-server-simulation-server.vercel.app/random');
               setRandomValue(response.data); // Update state with the received random value
               console.log('Received random value:', response.data);
           } catch (error) {
