@@ -1,28 +1,33 @@
-// App.js
 import React, { useEffect, useState } from 'react';
-import socketIOClient from 'socket.io-client';
+import { io } from 'socket.io-client';
+
+const socket = io('https://two-server-simulation-server.vercel.app'); // Replace with your server URL
 
 const App = () => {
-    const [randomValue, setRandomValue] = useState(null);
-    const endpoint = 'https://two-server-simulation-server.vercel.app'; // Replace with your cloud server URL
+  const [latestMessage, setLatestMessage] = useState('');
 
-    useEffect(() => {
-        const socket = socketIOClient(endpoint);
+  console.log(latestMessage);
 
-        socket.on('randomValue', (value) => {
-            setRandomValue(value);
-        });
+  useEffect(() => {
+    
+    // Listen for 'mqtt-data' events from the server
+    socket.on('mqtt-data', (message) => {
+      console.log('Received message:', message);
+      setLatestMessage(message); // Update state with the latest message
+    });
 
-        return () => {
-            socket.disconnect();
-        };
-    }, [endpoint]);
+    // Clean up the socket connection on component unmount
+    return () => {
+      socket.off('mqtt-data');
+    };
+  }, []);
 
-    return (
-        <div>
-            <h4>Random Value from Server2: {randomValue}</h4>
-        </div>
-    );
+  return (
+    <div>
+      <h1>Real-Time Data</h1>
+      <p>Latest Message: {latestMessage}</p>
+    </div>
+  );
 };
 
 export default App;
