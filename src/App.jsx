@@ -7,6 +7,7 @@ const SensorDataDisplay = () => {
   const [sensorData1, setSensorData1] = useState(null);
   const [sensorData2, setSensorData2] = useState(null);
   const [sensorData3, setSensorData3] = useState(null);
+  const [command, setCommand] = useState([]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -24,8 +25,27 @@ const SensorDataDisplay = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const sendCommand = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(`${ENDPOINT}/api/command`, { command });
+      console.log('Command response:', response.data);
+      setCommand(['', '']);
+    } catch (error) {
+      console.error('Error sending command:', error);
+    }
+  };
+
   return (
     <div>
+      <div>
+        <form onSubmit={sendCommand}>
+          <input type="text" value={command[0]} onChange={(e) => setCommand([e.target.value, command[1]])} />
+          <input type="text" value={command[1]} onChange={(e) => setCommand([command[0], e.target.value])} />
+          <button type='submit'>Send</button>
+        </form>
+      </div>
       {sensorData1 ? (
         <div>
           <p>Sensor1 Value: {sensorData1}</p>
