@@ -1,33 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 
-const socket = io('https://two-server-simulation-server.vercel.app'); // Replace with your server URL
+const ENDPOINT = 'https://two-server-simulation-server.vercel.app';
+let socket;
 
-const App = () => {
-  const [latestMessage, setLatestMessage] = useState('');
-
-  console.log(latestMessage);
+const RaspberryPiClient = () => {
+  const [sensorData, setSensorData] = useState(null);
 
   useEffect(() => {
-    
-    // Listen for 'mqtt-data' events from the server
-    socket.on('mqtt-data', (message) => {
-      console.log('Received message:', message);
-      setLatestMessage(message); // Update state with the latest message
+    socket = io(ENDPOINT);
+
+    socket.on('connect', () => {
+      console.log('Connected to the Node.js server');
     });
 
-    // Clean up the socket connection on component unmount
+    socket.on('sensor-data', (data) => {
+      console.log('Received sensor data:', data);
+      setSensorData(data);
+    });
+
+    socket.on('server-command', (data) => {
+      console.log('Received command from server:', data);
+      // Process the command and update the UI
+    });
+
     return () => {
-      socket.off('mqtt-data');
+      socket.disconnect();
     };
   }, []);
 
   return (
     <div>
-      <h1>Real-Time Data</h1>
-      <p>Latest Message: {latestMessage}</p>
+      {sensorData ? (
+        <p>Sensor Value: {sensorData.sensor_value}</p>
+      ) : (
+        <p>Loading sensor data...</p>
+      )}
     </div>
   );
 };
 
-export default App;
+export default RaspberryPiClient;
