@@ -1,62 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 
-const ENDPOINT = 'https://two-server-simulation-server.vercel.app';
+const socket = io('http://localhost:3000');
 
-const SensorDataDisplay = () => {
-  const [sensorData1, setSensorData1] = useState(null);
-  const [sensorData2, setSensorData2] = useState(null);
-  const [sensorData3, setSensorData3] = useState(null);
-  const [command, setCommand] = useState([]);
+const DataDisplay = () => {
+    const [data, setData] = useState(null);
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await axios.get(`${ENDPOINT}/api/data`);
-        console.log('Received sensor data:', response.data.sensor_value1);
-        setSensorData1(response.data.sensor_value1);
-        setSensorData2(response.data.sensor_value2);
-        setSensorData3(response.data.sensor_value3);
-      } catch (error) {
-        console.error('Error fetching sensor data:', error);
-      }
-    }, 1000);
+    useEffect(() => {
+        socket.on('update', (newData) => {
+            setData(newData);
+        });
 
-    return () => clearInterval(interval);
-  }, []);
+        return () => {
+            socket.off('update');
+        };
+    }, []);
 
-  const sendCommand = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post(`${ENDPOINT}/api/command`, { command });
-      console.log('Command response:', response.data);
-      setCommand(['', '']);
-    } catch (error) {
-      console.error('Error sending command:', error);
-    }
-  };
-
-  return (
-    <div>
-      <div>
-        <form onSubmit={sendCommand}>
-          <input type="text" value={command[0]} onChange={(e) => setCommand([e.target.value, command[1]])} />
-          <input type="text" value={command[1]} onChange={(e) => setCommand([command[0], e.target.value])} />
-          <button type='submit'>Send</button>
-        </form>
-      </div>
-      {sensorData1 ? (
+    return (
         <div>
-          <p>Sensor1 Value: {sensorData1}</p>
-          <p>Sensor2 Value: {sensorData2}</p>
-          <p>Sensor3 Value: {sensorData3}</p>
+            <h1>Data from Raspberry Pi:</h1>
+            {data ? <p>{JSON.stringify(data)}</p> : <p>No data received yet.</p>}
         </div>
-      ) : (
-        <p>Loading sensor data...</p>
-      )}
-    </div>
-  );
+    );
 };
 
-export default SensorDataDisplay;
+export default DataDisplay;
