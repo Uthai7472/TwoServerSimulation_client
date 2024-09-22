@@ -12,7 +12,7 @@ const App = () => {
 
   const registerDevice = async () => {
     try {
-      await axios.post('https://two-server-simulation-client.vercel.app/api/devices/register', {
+      await axios.post('https://two-server-simulation-server.vercel.app/api/devices/register', {
         deviceId, deviceName, deviceType
       });
       alert('Device registered successfully');
@@ -23,7 +23,7 @@ const App = () => {
 
   const controlDevice = async () => {
     try {
-      const response = await axios.post(`https://two-server-simulation-client.vercel.app/api/devices/${deviceId}/control`, {
+      const response = await axios.post(`https://two-server-simulation-server.vercel.app/api/devices/${deviceId}/control`, {
         command
       });
 
@@ -37,7 +37,7 @@ const App = () => {
   useEffect(() => {
     const fetchMonitorValue = async () => {
       try {
-          const response = await axios.get(`https://two-server-simulation-client.vercel.app/api/devices/${deviceId}/monitor`);
+          const response = await axios.get(`https://two-server-simulation-server.vercel.app/api/devices/${deviceId}/monitor`);
           if (response.data && response.data.values) {
               setMonitorValues(response.data.values);
           } else {
