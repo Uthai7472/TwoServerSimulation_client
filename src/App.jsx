@@ -37,12 +37,17 @@ const App = () => {
   useEffect(() => {
     const fetchMonitorValue = async () => {
       try {
-        const response = await axios.get(`https://two-server-simulation-client.vercel.app/api/devices/1234/monitor`);
-        setMonitorValues(response.data.values);
+          const response = await axios.get(`http://localhost:3000/api/devices/${deviceId}/monitor`);
+          if (response.data && response.data.values) {
+              setMonitorValues(response.data.values);
+          } else {
+              console.error('No values found in response:', response.data);
+          }
       } catch (error) {
-        console.error('Error fetching monitor values:', error);
+          console.error('Error fetching monitor values:', error);
       }
     };
+  
 
     const intervalId = setInterval(fetchMonitorValue, 1000);
   
