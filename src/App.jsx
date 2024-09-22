@@ -1,37 +1,94 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-
-const socket = io('https://two-server-simulation-server.vercel.app'); // Replace with your public server's URL
+import React, { useEffect, useState } from 'react'
+import axios from 'axios';
 
 const App = () => {
-    const [messages, setMessages] = useState([]);
-    const [message, setMessage] = useState('');
+  const [deviceId, setDeviceId] = useState('');
+  const [deviceName, setDeviceName] = useState('');
+  const [deviceType, setDeviceType] = useState('');
+  const [command, setCommand] = useState('');
+  const [status, setStatus] = useState('');
 
-    useEffect(() => {
-        // Listen for messages from the server
-        socket.on('message', (msg) => {
-            console.log('Message from server: ' + msg);
-            setMessages((prevMessages) => [...prevMessages, msg]);
-            setMessage(msg);
-        });
+  const [monitorValues, setMonitorValues] = useState([]);
 
-        // Clean up the socket connection on component unmount
-        return () => {
-            socket.off('message');
-        };
-    }, []);
+  const registerDevice = async () => {
+    try {
+      await axios.post('https://two-server-simulation-client.vercel.app/api/devices/register', {
+        deviceId, deviceName, deviceType
+      });
+      alert('Device registered successfully');
+    } catch (error) {
+      alert(`Error: ${error.response.data.error}`);
+    }
+  }
 
-    return (
-        <div>
-            <h1>Real-Time Messages</h1>
-            <p>{message}</p>
-            <ul>
-                {messages.map((msg, index) => (
-                    <li key={index}>{msg}</li>
-                ))}
-            </ul>
-        </div>
-    );
-};
+  const controlDevice = async () => {
+    try {
+      const response = await axios.post(`https://two-server-simulation-client.vercel.app/api/devices/${deviceId}/control`, {
+        command
+      });
 
-export default App;
+      alert(response.data.message);
+
+    } catch (error) {
+      alert(`Error: ${error.response.data.error}`);
+    }
+  }
+
+  useEffect(() => {
+    const fetchMonitorValue = async () => {
+      try {
+        const response = await axios.get(`https://two-server-simulation-client.vercel.app/api/devices/1234/monitor`);
+        setMonitorValues(response.data.values);
+      } catch (error) {
+        console.error('Error fetching monitor values:', error);
+      }
+    };
+
+    const intervalId = setInterval(fetchMonitorValue, 1000);
+  
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return (
+    <div>
+      <h1>Device Control</h1>
+      <h3>Register Device</h3>
+      <input 
+        type="text" 
+        value={deviceId}
+        onChange={(e) => setDeviceId(e.target.value)}
+        placeholder='Device ID'
+      />
+      <input 
+        type="text" 
+        value={deviceName}
+        onChange={(e) => setDeviceName(e.target.value)}
+        placeholder='Device Name'
+      />
+      <input 
+        type="text" 
+        value={deviceType}
+        onChange={(e) => setDeviceType(e.target.value)}
+        placeholder='Device Type'
+      />
+      <button onClick={registerDevice}>
+        Register
+      </button>
+
+      <h3>Send Command</h3>
+      <input 
+        type="text" 
+        value={command}
+        onChange={(e) => setCommand(e.target.value)}
+        placeholder='Command'
+      />
+      <button onClick={controlDevice}>
+        Send Command
+      </button>
+
+      <h3>{monitorValues[1]}</h3>
+    </div>
+  )
+}
+
+export default App
