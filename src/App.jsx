@@ -37,7 +37,7 @@ const App = () => {
   useEffect(() => {
     const fetchMonitorValue = async () => {
       try {
-          const response = await axios.get(`https://two-server-simulation-server.vercel.app/api/devices/${deviceId}/monitor`);
+          const response = await axios.get(`https://two-server-simulation-server.vercel.app/api/devices/1234/monitor`);
           if (response.data && response.data.values) {
               setMonitorValues(response.data.values);
           } else {
