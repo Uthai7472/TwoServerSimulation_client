@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('https://two-server-simulation-server.vercel.app');
+const socket = io('http://localhost:3000'); // Replace with your public server's URL
 
-const DataDisplay = () => {
-    const [data, setData] = useState(null);
+const App = () => {
+    const [messages, setMessages] = useState([]);
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
-        socket.on('update', (newData) => {
-            setData(newData);
+        // Listen for messages from the server
+        socket.on('message', (msg) => {
+            console.log('Message from server: ' + msg);
+            setMessages((prevMessages) => [...prevMessages, msg]);
+            setMessage(msg);
         });
 
+        // Clean up the socket connection on component unmount
         return () => {
-            socket.off('update');
+            socket.off('message');
         };
     }, []);
 
     return (
         <div>
-            <h1>Data from Raspberry Pi:</h1>
-            {data ? <p>{JSON.stringify(data)}</p> : <p>No data received yet.</p>}
+            <h1>Real-Time Messages</h1>
+            <p>{message}</p>
+            <ul>
+                {messages.map((msg, index) => (
+                    <li key={index}>{msg}</li>
+                ))}
+            </ul>
         </div>
     );
 };
 
-export default DataDisplay;
+export default App;
